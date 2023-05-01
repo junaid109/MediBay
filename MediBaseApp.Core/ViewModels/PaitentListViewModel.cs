@@ -1,4 +1,5 @@
 ﻿using MediBaseApp.Core.Models;
+using MediBaseApp.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,25 +10,32 @@ using System.Threading.Tasks;
 namespace MediBaseApp.Core.ViewModels
 {
 
-    public class PatientListViewModel : ViewModelBase
+    internal class PatientListViewModel : BaseViewModel
     {
-        private readonly ObservableCollection<Patient> _patients;
+        private readonly IPatientDataService _patientDataService;
 
-        public PatientListViewModel()
+        public PatientListViewModel(IPatientDataService patientDataService)
         {
-            _patients = new ObservableCollection<Patient>();
+            _patientDataService = patientDataService;
         }
 
-        public ObservableCollection<Patient> Patients => _patients;
+        public PatientListViewModel(IPatientDataService patientDataService, ObservableCollection<Patient> patients) : this(patientDataService)
+        {
+            Patients = patients;
+        }
+
+        public ObservableCollection<Patient> Patients { get; } = new ObservableCollection<Patient>();
 
         public async Task LoadPatientsAsync()
         {
-            // fetch patient data from REST API or local database
-            // and add the patients to the _patients collection
-            // for example:
-            _patients.Add(new Patient { Name = "John Doe", Age = 42, Gender = "Male" });
-            _patients.Add(new Patient { Name = "Jane Doe", Age = 35, Gender = "Female" });
-            
+            var patients = await _patientDataService.GetPatientsAsync();
+
+            Patients.Clear();
+
+            foreach (var patient in patients)
+            {
+                Patients.Add(patient);
+            }
         }
     }
 
